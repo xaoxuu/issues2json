@@ -130,8 +130,8 @@ async function parseIssues() {
       // 对 issues 进行版本号排序
       sortedIssues = issues.sort((a, b) => {
         const getVersionLabel = (issue) => {
-          const versionLabel = issue.labels.find(label => /^\d+\.\d+\.\d+$/.test(label.name));
-          return versionLabel ? versionLabel.name : '0.0.0';
+          const versionLabel = issue.labels.find(label => /^v?\d+\.\d+\.\d+$/.test(label.name));
+          return versionLabel ? versionLabel.name.replace(/^v/, '') : '0.0.0';
         };
 
         const versionA = getVersionLabel(a).split('.').map(Number);
