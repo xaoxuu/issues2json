@@ -50,7 +50,13 @@ async function processIssue(issue) {
       }
     }
     if (!isIconValid) {
-      jsonData.icon = issue.user.avatar_url;
+      if (issue.user && issue.user.gravatar_id) {
+        // 优先使用 gravatar_id 字段组合头像
+        jsonData.icon = `https://gravatar.com/avatar/${issue.user.gravatar_id}?s=256&d=identicon`;  
+      } else {
+        // 如果 gravatar_id 字段也不存在，使用用户的头像
+        jsonData.icon = issue.user.avatar_url;
+      }
     }
     
     return jsonData;

@@ -69,7 +69,8 @@ export class IssueManager {
         })),
         body: issue.body,
         created_at: issue.created_at,
-        updated_at: issue.updated_at
+        updated_at: issue.updated_at,
+        user: issue.user,
       })).filter(item => item.url);
     } catch (error) {
       handleError(error, 'Error fetching issues');
