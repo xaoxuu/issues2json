@@ -37,24 +37,7 @@ async function processIssue(issue) {
     }));
     
     // 如果 icon 为空或者无法访问，就设置为创建该issue用户的头像
-    let isIconValid = false;
-    if (jsonData.icon?.length > 0) {
-      try {
-        // 简单的URL格式校验
-        new URL(jsonData.icon);
-        const response = await fetch(jsonData.icon, { method: 'HEAD', signal: AbortSignal.timeout(5000) }); // 增加5秒超时
-        logger('info', `Icon URL ${jsonData.icon}, response status: ${response.status}, isok: ${response.ok}`);
-        if (response.ok) {
-          isIconValid = true;
-        } else {
-          logger('warn', `Icon URL ${jsonData.icon} is not valid or accessible, resp: ${response.status}`);
-        }
-      } catch (error) {
-        logger('warn', `Icon URL ${jsonData.icon} is not valid or accessible: ${error.message}`);
-      }
-    }
-    logger('info', `#${issue.number} Icon URL ${jsonData.icon} is valid: ${isIconValid}`);
-    if (!isIconValid) {
+    if (!jsonData.icon || jsonData.icon.length === 0) {
       if (issue.user.gravatar_id?.length > 0) {
         // 优先使用 gravatar_id 字段组合头像
         jsonData.icon = `https://gravatar.com/avatar/${issue.user.gravatar_id}?s=256&d=identicon`;  
