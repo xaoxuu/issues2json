@@ -34,6 +34,24 @@ async function processIssue(issue) {
       name: label.name,
       color: label.color
     }));
+    // 如果 icon 为空或者无法访问，就设置为创建该issue用户的头像
+    let isIconValid = false;
+    if (jsonData.icon && typeof jsonData.icon === 'string' && jsonData.icon.length > 0) {
+      try {
+        // 简单的URL格式校验
+        new URL(jsonData.icon);
+        const response = await fetch(jsonData.icon, { method: 'HEAD', signal: AbortSignal.timeout(5000) }); // 增加5秒超时
+        logger('info', `Icon URL ${jsonData.icon}, response status: ${response.status}, isok: ${response.ok}`);
+        if (response.ok) {
+          isIconValid = true;
+        }
+      } catch (error) {
+        logger('warn', `Icon URL ${jsonData.icon} is not valid or accessible: ${error.message}`);
+      }
+    }
+    if (!isIconValid) {
+      jsonData.icon = issue.user.avatar_url;
+    }
     
     return jsonData;
   } catch (error) {
