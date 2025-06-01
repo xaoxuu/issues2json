@@ -8,7 +8,7 @@ const config = {
   data_path: core.getInput('data_path') || '/v2/data.json',
   sort: core.getInput('sort') || 'created-desc',
   exclude_labels: (core.getInput('exclude_labels') || '审核中, 无法访问').split(',').map(s => s.trim()).filter(label => label.length > 0),
-  github_token: core.getInput('github_token') || process.env.GITHUB_TOKEN,
+  github_token: process.env.GITHUB_TOKEN,
 };
 
 async function processIssue(issue) {
