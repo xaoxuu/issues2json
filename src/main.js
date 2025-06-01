@@ -20,23 +20,25 @@ async function processIssue(issue) {
     }
 
     const match = issue.body.match(/```json\s*\{[\s\S]*?\}\s*```/m);
-    const jsonMatch = match ? match[0].match(/\{[\s\S]*?\}/m) : null;
+    const jsonMatch = match ? match[0].match(/\{[\s\S]*\}/m) : null;
 
     if (!jsonMatch) {
       logger('warn', `No JSON content found in issue #${issue.number}`);
       return null;
     }
 
-    logger('info', `Found JSON content in issue #${issue.number}`);
-    const jsonData = JSON.parse(jsonMatch[0]);
+    // 解析 JSON 内容
+    var jsonData = JSON.parse(jsonMatch[0]);
+    
     jsonData.issue_number = issue.number;
     jsonData.labels = issue.labels.map(label => ({
       name: label.name,
       color: label.color
     }));
+    
     // 如果 icon 为空或者无法访问，就设置为创建该issue用户的头像
     let isIconValid = false;
-    if (jsonData.icon && typeof jsonData.icon === 'string' && jsonData.icon.length > 0) {
+    if (jsonData.icon?.length > 0) {
       try {
         // 简单的URL格式校验
         new URL(jsonData.icon);
@@ -49,8 +51,9 @@ async function processIssue(issue) {
         logger('warn', `Icon URL ${jsonData.icon} is not valid or accessible: ${error.message}`);
       }
     }
+    logger('info', `#${issue.number} Icon URL ${jsonData.icon} is valid: ${isIconValid}`);
     if (!isIconValid) {
-      if (issue.user && issue.user.gravatar_id) {
+      if (issue.user.gravatar_id?.length > 0) {
         // 优先使用 gravatar_id 字段组合头像
         jsonData.icon = `https://gravatar.com/avatar/${issue.user.gravatar_id}?s=256&d=identicon`;  
       } else {
@@ -59,6 +62,7 @@ async function processIssue(issue) {
       }
     }
     
+    logger('info', `#${issue.number} output jsonData: ${JSON.stringify(jsonData)}`);
     return jsonData;
   } catch (error) {
     handleError(error, `Error processing issue #${issue.number}`);

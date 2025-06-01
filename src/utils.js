@@ -32,6 +32,7 @@ export function writeJsonToFile(filePath, data) {
   }
 }
 
+
 export class IssueManager {
   constructor(token) {
     this.octokit = new Octokit({
@@ -41,7 +42,6 @@ export class IssueManager {
 
   async getIssues(exclude_labels) {
     const { owner, repo } = github.context.repo;
-    
     try {
       // 使用 paginate 方法一次性获取所有 issues
       const issues = await this.octokit.paginate(this.octokit.issues.listForRepo, {
@@ -52,47 +52,24 @@ export class IssueManager {
         sort: 'created',
         direction: 'desc'
       });
-      logger('info', `Fetched ${issues.length} issues`, issues.map(item => item.number).join(','));
+      logger('info', `一共有${issues.length}个打开的issues: ${issues.map(item => item.number).join(',')}`);
+
+      if (!exclude_labels || exclude_labels.length === 0) {
+        return issues;
+      }
+
       // 过滤掉包含 exclude_labels 中定义的标签的 Issue
       const filteredIssues = issues.filter(issue => {
         const issueLabels = issue.labels.map(label => label.name);
         return !exclude_labels.some(excludeLabel => issueLabels.includes(excludeLabel));
       });
       
-      logger('info', `Filtered(${exclude_labels}) ${filteredIssues.length}`, filteredIssues.map(item => item.number).join(','));
-      return filteredIssues.map(issue => ({
-        url: issue.body?.match(/"url":\s*"([^"]+)"/)?.at(1),
-        number: issue.number,
-        labels: issue.labels.map(label => ({
-          name: label.name,
-          color: label.color
-        })),
-        body: issue.body,
-        created_at: issue.created_at,
-        updated_at: issue.updated_at,
-        user: issue.user,
-      })).filter(item => item.url);
+      logger('info', `经过[${exclude_labels}]过滤后还有${issues.length}个: ${filteredIssues.map(item => item.number).join(',')}`);
+      return filteredIssues;
     } catch (error) {
-      handleError(error, 'Error fetching issues');
+      logger('error', '获取issues失败');
       throw error;
     }
   }
 
-  async updateIssueLabels(issueNumber, labels) {
-    // 如果 labels 里面有未定义对象，就移除
-    labels = (labels || []).filter(label => label);
-    const { owner, repo } = github.context.repo;
-    try {
-      logger('info', `Will update labels for issue #${issueNumber} at ${owner}/${repo}`, labels);
-      await this.octokit.issues.setLabels({
-        owner,
-        repo,
-        issue_number: issueNumber,
-        labels
-      });
-      logger('info', `Updated labels for issue #${issueNumber}`, labels);
-    } catch (error) {
-      handleError(error, `Error updating labels for issue #${issueNumber}`);
-    }
-  }
 }
