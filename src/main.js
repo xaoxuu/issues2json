@@ -76,13 +76,24 @@ async function parseIssues() {
   
   try {
     const issueManager = new IssueManager(config.github_token);
-    const issues = await issueManager.getIssues(config.exclude_labels);
+    var issues = await issueManager.getIssues(config.exclude_labels);
     logger('info', `Found ${issues.length} issues to process`);
 
     const parsedData = {
       version: config.data_version,
       content: []
     };
+
+    // 先处理所有的 issues，然后再根据排序方式进行排序
+    for (let issue of issues) {
+      const processedData = await processIssue(issue);
+      if (processedData) {
+        issue.jsonData = processedData;
+      }
+    }
+
+    // 过滤掉没有解析成功的 issues
+    issues = issues.filter(issue => issue.jsonData);
 
     // 根据配置的排序方式进行排序
     let sortedIssues = issues;
@@ -97,6 +108,23 @@ async function parseIssues() {
         } else {
           return dateB.getTime() - dateA.getTime();
         }
+      });
+    } else if (config.sort === 'posts-desc') {
+      sortedIssues = issues.sort((a, b) => {
+        const getPublishedDate = (issue) => {
+          try {
+            const jsonData = issue.jsonData;
+            if (jsonData.posts && jsonData.posts.length > 0 && jsonData.posts[0].published) {
+              return new Date(jsonData.posts[0].published);
+            }
+          } catch (e) {
+            logger('warn', `Failed to parse JSON or get published date for issue ${issue.number}: ${e.message}`);
+          }
+          return new Date(issue.created_at); // Return created_at date if published date is not found
+        };
+        const dateA = getPublishedDate(a);
+        const dateB = getPublishedDate(b);
+        return dateB.getTime() - dateA.getTime(); // Descending order
       });
     } else {
       // 对 issues 进行版本号排序
@@ -120,7 +148,7 @@ async function parseIssues() {
     logger('info', `Sorted by ${config.sort}, issues: ${sortedIssues.map(item => item.number).join(',')}`);
     
     for (const issue of sortedIssues) {
-      const processedData = await processIssue(issue);
+      const processedData = issue.jsonData;
       if (processedData) {
         parsedData.content.push(processedData);
       }
