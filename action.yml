@@ -1,5 +1,5 @@
-name: 'Friends Link Generator'
-description: 'Automated generator for friend links'
+name: 'Issues to Json'
+description: 'Generate JSON from GitHub issues'
 author: 'xaoxuu'
 
 inputs:
