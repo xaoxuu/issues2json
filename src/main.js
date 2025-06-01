@@ -46,6 +46,8 @@ async function processIssue(issue) {
         logger('info', `Icon URL ${jsonData.icon}, response status: ${response.status}, isok: ${response.ok}`);
         if (response.ok) {
           isIconValid = true;
+        } else {
+          logger('warn', `Icon URL ${jsonData.icon} is not valid or accessible, resp: ${response.status}`);
         }
       } catch (error) {
         logger('warn', `Icon URL ${jsonData.icon} is not valid or accessible: ${error.message}`);
