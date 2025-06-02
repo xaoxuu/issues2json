@@ -1,5 +1,5 @@
 import path from 'path';
-import { logger, handleError, IssueManager, writeJsonToFile } from './utils.js';
+import { logger, handleError, IssueManager, writeJsonToFile, hexToHsl } from './utils.js';
 import * as core from '@actions/core';
 
 
@@ -31,10 +31,14 @@ async function processIssue(issue) {
     var jsonData = JSON.parse(jsonMatch[0]);
     
     jsonData.issue_number = issue.number;
-    jsonData.labels = issue.labels.map(label => ({
-      name: label.name,
-      color: label.color
-    }));
+    jsonData.labels = issue.labels.map(label => {
+      const hsl = hexToHsl(label.color);
+      return {
+        name: label.name,
+        color: label.color,
+        hue: hsl ? hsl.h : 0
+      };
+    });
     
     // 如果 icon 为空或者无法访问，就设置为创建该issue用户的头像
     if (!jsonData.icon || jsonData.icon.length === 0) {
