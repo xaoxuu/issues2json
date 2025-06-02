@@ -7,7 +7,8 @@ const config = {
   data_version: core.getInput('data_version') || 'v2',
   data_path: core.getInput('data_path') || '/v2/data.json',
   sort: core.getInput('sort') || 'created-desc',
-  exclude_labels: (core.getInput('exclude_labels') || '审核中').split(',').map(s => s.trim()).filter(label => label.length > 0),
+  exclude_issue_with_labels: (core.getInput('exclude_issue_with_labels') || '审核中').split(',').map(s => s.trim()).filter(label => label.length > 0),
+  hide_labels: (core.getInput('hide_labels') || '白名单').split(',').map(s => s.trim()).filter(label => label.length > 0),
   github_token: process.env.GITHUB_TOKEN,
 };
 
@@ -31,7 +32,7 @@ async function processIssue(issue) {
     var jsonData = JSON.parse(jsonMatch[0]);
     
     jsonData.issue_number = issue.number;
-    jsonData.labels = issue.labels.map(label => {
+    jsonData.labels = issue.labels.filter(label => label.name !== 'hide_labels').map(label => {
       const hsl = hexToHsl(label.color);
       return {
         name: label.name,
@@ -63,7 +64,7 @@ async function parseIssues() {
   
   try {
     const issueManager = new IssueManager(config.github_token);
-    var issues = await issueManager.getIssues(config.exclude_labels);
+    var issues = await issueManager.getIssues(config.exclude_issue_with_labels);
     logger('info', `Found ${issues.length} issues to process`);
 
     const parsedData = {

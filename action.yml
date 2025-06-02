@@ -15,10 +15,14 @@ inputs:
     description: 'Issue排序方式和方向 (例如: created-desc, updated-asc, version-desc, posts-desc)'
     required: false
     default: 'created-desc'
-  exclude_labels:
-    description: '需要排除的Issue标签 (逗号分隔)'
+  exclude_issue_with_labels:
+    description: '需要排除包含哪些标签的Issue (逗号分隔)'
     required: false
     default: '审核中'
+  hide_labels:
+    description: '需要在前端隐藏的Issue标签，不会写入JSON文件中 (逗号分隔)'
+    required: false
+    default: '白名单'
 
 
 runs:

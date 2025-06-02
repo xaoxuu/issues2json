@@ -9,7 +9,7 @@ Generate JSON from GitHub issues
 | `data_path` | 数据文件存储路径 | `false` | `/v2/data.json` |
 | `data_version` | 数据结构版本号 | `false` | `v2` |
 | `sort` | Issue排序方式和方向 (例如: created-desc, updated-asc, version-desc) | `false` | `created-desc` |
-| `exclude_labels` | 需要排除的Issue标签 (逗号分隔) | `false` | `审核中` |
+| `exclude_issue_with_labels` | 需要排除的Issue标签 (逗号分隔) | `false` | `审核中` |
 
 ## Usage
 
@@ -35,7 +35,7 @@ jobs:
           data_path: './v2/data.json'
           data_version: 'v2'
           sort: 'created-desc'
-          exclude_labels: '审核中'
+          exclude_issue_with_labels: '审核中'
 
       - name: Commit files
         run: |
