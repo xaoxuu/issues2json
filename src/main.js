@@ -32,12 +32,14 @@ async function processIssue(issue) {
     var jsonData = JSON.parse(jsonMatch[0]);
     
     jsonData.issue_number = issue.number;
-    jsonData.labels = issue.labels.filter(label => label.name !== 'hide_labels').map(label => {
+    jsonData.labels = issue.labels.filter(label => !config.hide_labels.includes(label.name)).map(label => {
       const hsl = hexToHsl(label.color);
       return {
         name: label.name,
         color: label.color,
-        hue: hsl ? hsl.h : 0
+        hue: hsl ? hsl.h : 0,
+        saturation: hsl? hsl.s : 0,
+        lightness: hsl? hsl.l : 0
       };
     });
     
