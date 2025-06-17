@@ -30,7 +30,7 @@ async function processIssue(issue) {
 
     // 解析 JSON 内容
     var jsonData = JSON.parse(jsonMatch[0]);
-    
+
     jsonData.issue_number = issue.number;
     jsonData.labels = issue.labels.filter(label => !config.hide_labels.includes(label.name)).map(label => {
       const hsl = hexToHsl(label.color);
@@ -42,18 +42,18 @@ async function processIssue(issue) {
         lightness: hsl? hsl.l : 0
       };
     });
-    
+
     // 如果 icon 为空或者无法访问，就设置为创建该issue用户的头像
     if (!jsonData.icon || jsonData.icon.length === 0) {
       if (issue.user.gravatar_id?.length > 0) {
         // 优先使用 gravatar_id 字段组合头像
-        jsonData.icon = `https://gravatar.com/avatar/${issue.user.gravatar_id}?s=256&d=identicon`;  
+        jsonData.icon = `https://gravatar.com/avatar/${issue.user.gravatar_id}?s=256&d=identicon`;
       } else {
         // 如果 gravatar_id 字段也不存在，使用用户的头像
         jsonData.icon = issue.user.avatar_url;
       }
     }
-    
+
     logger('info', `#${issue.number} output jsonData: ${JSON.stringify(jsonData)}`);
     return jsonData;
   } catch (error) {
@@ -63,7 +63,7 @@ async function processIssue(issue) {
 }
 
 async function parseIssues() {
-  
+
   try {
     const issueManager = new IssueManager(config.github_token);
     var issues = await issueManager.getIssues(config.exclude_issue_with_labels);
@@ -110,11 +110,13 @@ async function parseIssues() {
           } catch (e) {
             logger('warn', `Failed to parse JSON or get published date for issue ${issue.number}: ${e.message}`);
           }
-          return new Date(issue.created_at); // Return created_at date if published date is not found
+          return null;
         };
         const dateA = getPublishedDate(a);
         const dateB = getPublishedDate(b);
-        return dateB.getTime() - dateA.getTime(); // Descending order
+        if (dateA === null && dateB === null) return new Date(b.created_at) - new Date(a.created_at);
+        else if (dateA === null || dateB === null) return (dateA === null) - (dateB === null); // If between date and null, null comes first
+        else return dateB.getTime() - dateA.getTime(); // Descending order
       });
     } else {
       // 对 issues 进行版本号排序
@@ -136,7 +138,7 @@ async function parseIssues() {
     }
 
     logger('info', `Sorted by ${config.sort}, issues: ${sortedIssues.map(item => item.number).join(',')}`);
-    
+
     for (const issue of sortedIssues) {
       const processedData = issue.jsonData;
       if (processedData) {
