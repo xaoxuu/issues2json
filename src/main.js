@@ -4,7 +4,7 @@ import * as core from '@actions/core';
 
 
 const config = {
-  data_version: core.getInput('data_version') || 'v2',
+  data_version: 'v2',
   data_path: core.getInput('data_path') || '/v2/data.json',
   sort: core.getInput('sort') || 'created-desc',
   exclude_issue_with_labels: (core.getInput('exclude_issue_with_labels') || '审核中').split(',').map(s => s.trim()).filter(label => label.length > 0),

@@ -2,14 +2,17 @@
 
 Generate JSON from GitHub issues
 
+把每个 issue 中第一个 json 提取出来合并导出为一个 json 文件。
+
 ## Inputs
 
 | Name | Description | Required | Default |
 |---|---|---|---|
 | `data_path` | 数据文件存储路径 | `false` | `/v2/data.json` |
-| `data_version` | 数据结构版本号 | `false` | `v2` |
 | `sort` | Issue排序方式和方向 (例如: created-desc, updated-asc, version-desc) | `false` | `created-desc` |
-| `exclude_issue_with_labels` | 需要排除的Issue标签 (逗号分隔) | `false` | `审核中` |
+| `exclude_issue_with_labels` | 具有哪些标签的Issue需要排除 (逗号分隔) | `false` | `审核中` |
+| `hide_labels` | 生成的json中去除哪些标签 (逗号分隔) | `false` | `白名单` |
+
 
 ## Usage
 
@@ -31,11 +34,11 @@ jobs:
 
       - name: Generate JSON from Issues
         uses: xaoxuu/issues2json@main
-        with:
+        with: # 全部可选
           data_path: './v2/data.json'
-          data_version: 'v2'
           sort: 'created-desc'
           exclude_issue_with_labels: '审核中'
+          hide_labels: '白名单'
 
       - name: Commit files
         run: |

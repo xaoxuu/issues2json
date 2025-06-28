@@ -7,10 +7,6 @@ inputs:
     description: '数据文件存储路径'
     required: false
     default: '/v2/data.json'
-  data_version:
-    description: '数据结构版本号'
-    required: false
-    default: 'v2'
   sort:
     description: 'Issue排序方式和方向 (例如: created-desc, updated-asc, version-desc, posts-desc)'
     required: false
